@@ -219,3 +219,5 @@ __marimo__/
 
 reports/*
 logs/*
+database/*
+reports_test/*
