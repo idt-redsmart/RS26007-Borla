@@ -1,0 +1,391 @@
+﻿Numero pagine: 4
+
+========== PAGINA 1 ==========
+industrie borla S.p.A.
+11 luglio 2026
+SPECIFICA NUOVA ATTREZZATURA di CONTROLLO
+della FORZA di REAZIONE ELASTICA del PF0924
+DESCRIZIONE della PROVA
+Il controllo ha la funzione di verificare la forza di reazione elastica del PF0924 sottoposto a una compressione
+nota. La prova per lÔÇÖaddetto consiste nelle seguenti fasi:
+´éÀ Inserimento manuale del campione sul posaggio
+´éÀ Azionamento della leva di sollevamento
+´éÀ Lettura dellÔÇÖesito del controllo
+DESCRIZIONE dellÔÇÖATTREZZATURA ATTUALE
+La leva ├¿ collegata a un albero che fa ruotare un
+sistema biella manovella sollevando cos├¼ il posaggio.
+QuestÔÇÖultimo ├¿ molleggiato e sollevandosi viene
+portato a una battuta meccanica. Durante lÔÇÖultimo
+tratto di salita verticale la molla sotto il posaggio lo
+comprime a battuta. Questo viene fatto per avere
+una quota di compressione del gommino contro il
+perno sempre uguale. La quota dal piano di appoggio
+dellÔÇÖelemento in prova alla testa del perno ├¿ pari a
+2,2 mm. Questa quota ├¿ fondamentale per la corretta
+lettura della nuova attrezzatura.
+Il sensore ├¿ collegato a una centralina che ne gestisce
+e valuta il segnale. Al raggiungimento di un valore
+minimo di lettura della cella di carico viene avviata la
+prova. I parametri del collaudo sono i seguenti:
+´éÀ t = 4,0 s
+´éÀ Fmin = 1060,0 mN
+´éÀ Fmax = 1350,0 mN
+Durante tutti i 4 secondi di collaudo la forza di reazione letta dal sensore deve rientrare nella finestra
+impostata.
+NellÔÇÖattrezzatura attuale il sensore (la cella di carico) ha un fondo scala pari a 5 N ed ├¿ collegata a una
+centralina che gestisce il Trig, il ciclo di collaudo e lÔÇÖesito.
+
+========== PAGINA 2 ==========
+industrie borla S.p.A.
+SPECIFICHE NUOVA ATTREZZATURA in ORDINE
+La nuova attrezzatura dovr├á replicare quanto descritto sinora in termini di logica del collaudo, quote e tempi.
+SullÔÇÖHMI dellÔÇÖattrezzatura dovranno essere settabili a inizio collaudo i seguenti dati:
+´éÀ Operatore
+´éÀ Stampo
+´éÀ Lotto di produzione
+´éÀ Lotto di materia prima
+A fine collaudo si dovr├á creare un report in PDF contenente i seguenti dati:
+´éÀ Data
+´éÀ Operatore
+´éÀ Stampo
+´éÀ Lotto di produzione
+´éÀ Lotto di materia prima
+´éÀ Q.t├á di pezzi controllati (calcolati a fine prova)
+´éÀ Valore minimo rilevato
+´éÀ Valore massimo rilevato
+´éÀ Valore medio rilevato
+´éÀ Range (max rilevato ÔÇô min rilevato)
+´éÀ Deviazione standard
+´éÀ Valore minimo di accettazione (settabile sullÔÇÖHMI)
+´éÀ Valore massimo di accettazione (settabile sullÔÇÖHMI)
+´éÀ Un grafico a dispersione con la nuvola di dati rilevati
+LISTAL Ltd.
+Il menu principale dovr├á prevedere un pulsante per
+lÔÇÖavvio del test, uno per il settaggio e uno storico PF0924 ELASTIC REACTION TEST
+STORICO
+TEST SETTING
+DATI
+LISTAL Ltd. ELASTIC REACTION TEST
+OPERATOR Pini MOULD PF0924/2 BACK
+PRODUCTION RAW
+Avviando il test si aprir├á una finestra dove sar├á richiesto LOT 1234/26 MATERIAL 5678/26
+di inserire i dati iniziali: operatore, stampo, lotto di
+ESC 1 2 3 4 5 6 7 8 9 0 ' ├¼
+produzione e lotto di materia prima
+Q W E R T Y U I O P ├¿ + START
+Enter
+A S D F G H J K L ├▓ ├á ├╣
+TEST
+Z X C V B N M , . - Shift
+CTRL space
+[TABELLE:]
+LISTAL Ltd.
+PF0924 ELASTIC REACTION TEST |  |  |  |  |  | 
+ | TEST |  | SETTING |  | STORICO
+DATI | 
+ |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ | LISTAL Ltd. ELASTIC REACTION TEST |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ | OPERATOR |  |  | Pini |  |  | MOULD |  |  | PF0924/2 |  |  |  |  |  | BACK | 
+PRODUCTION RAW
+LOT 1234/26 MATERIAL 5678/26 | PRODUCTION
+LOT |  |  | 1234/26 |  |  | RAW
+MATERIAL |  |  | 5678/26 |  |  |  |  |  |  | 
+ | ESC |  | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | ' | ├¼ |  | START
+TEST | 
+ | Q | W | E | R | T | Y | U | I | O | P | ├¿ | + | Enter |  |  |  | 
+ | A | S | D | F | G | H | J | K | L | ├▓ | ├á | ├╣ |  |  |  |  | 
+ | Z | X | C | V | B | N | M | , | . | - | Shift |  |  |  |  |  | 
+ | CTRL |  | space |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+
+========== PAGINA 3 ==========
+industrie borla S.p.A.
+Una volta avviato il test, il trigger sar├á dato da una
+LISTAL Ltd. ELASTIC REACTION TEST
+lettura minima della cella di carico. Durante i collaudi le
+LSP 1060 mN
+variabili (Q.ty, Min Value, Mean Value, ecc.) si dovranno USL 1350 mN
+a g
+ta
+r g
+s
+a g
+t
+f i
+o
+i o c r o
+d
+n .
+i
+a
+f
+D r
+in
+e o
+e
+p d o
+p
+o
+r
+a
+o
+p v
+v
+o e
+a
+r
+.
+o t g e n s i t a c t o o l l t a u u t d ti o i c co am s├¼ p c io o n m i e p r a e n m c e h r e e i il l
+M
+M
+E
+I
+A
+N Q
+N
+V . T
+V
+A Y
+A
+LU
+LU
+E
+E
+1
+1
+2
+2
+3 2
+3
+3 0
+0
+]N m [ NO ITCAER
+CITSALE
+1
+1
+1 1 1 1
+1 1 1 1 1 1 1
+1 2
+4 5
+0
+0
+1 2
+3 3 4 5 6
+0 5
+0 5
+0
+5
+5 0
+0 5 5 0 0
+0 0
+0 0
+0
+0
+0 0
+0 0 0 0 0
+T
+E
+E
+N
+S
+D
+T
+MAX VALUE 1260 950
+900
+850
+LISTAL Ltd. ELASTIC REACTION TEST
+Nel menu SETTING, accessibile tramite Password, sar├á
+possibile settare: Lower Limit 1060 mN Time 4,0 s BACK
+Upper Limit 1350 mN Trigger Force 200 mN
+´éÀ Lower limit [mN]
+´éÀ Upper limit [mN]
+ESC 1 2 3 4 5 6 7 8 9 0 ' ├¼
+´éÀ Time [s]
+Q W E R T Y U I O P ├¿ +
+´éÀ Trigger Force [mN] A S D F G H J K L ├▓ ├á ├╣ Enter COMFIRM
+Z X C V B N M , . - Shift
+CTRL space
+LISTAL Ltd. ELASTIC REACTION TEST
+Nel menu STORICO DATI dovr├á essere presente una
+tabella dove saranno presenti i collaudi precedenti con ID DATE MOULD MIN MEAN MAX GRAPH BACK
+9 5/7/26 PF0924/2 1160 1240 1286 VIEW Ôåæ
+le seguenti voci: 8 5/7/26 PF0924/2 1136 1237 1272 VIEW
+7 5/7/26 PF0924/1 1148 1242 1276 VIEW
+6 5/7/26 PF0924/2 1178 1231 1259 VIEW
+´éÀ ID Collaudo 5 5/7/26 PF0924/3 1135 1231 1276 VIEW
+4 5/7/26 PF0924/2 1132 1234 1272 VIEW
+´éÀ Data
+3 5/7/26 PF0924/2 1148 1237 1264 VIEW
+´éÀ Stampo 2 5/7/26 PF0924/2 1178 1242 1287 VIEW
+1 5/7/26 PF0924/2 1131 1246 1262 VIEW Ôåô
+´éÀ Min
+´éÀ Med
+´éÀ Max
+´éÀ Report (premendo si visiona il Report generato)
+Di seguito un esempio di Report finale.
+[TABELLE:]
+ |  |  |  |  |  | 
+ | LISTAL Ltd. ELASTIC REACTION TEST |  |  |  |  | 
+LSP 1060 mN
+USL 1350 mN
+1600
+Q.TY 33 ]N m [ N 1 1 1 1 1 4 5 3 4 5 0 5 5 5 0 0 0 0 0 0 |  |  |  |  |  | 
+ |  |  | 1600
+1550
+]N m [ N 1 1 1 1 4 3 4 5 0 5 5 0 0 0 0 0 |  |  | 
+ | Q.TY | 33 |  |  |  | 
+ |  |  |  |  |  | 
+ | MIN VALUE | 1220 | O ITCAER 1 3 0 0
+1 2 5 0
+1 2 0 0
+CITSALE 1 1 1 1 0 5 0 0
+1 0 5 0
+1 0 0 0
+950
+900
+850 |  | END
+TEST | 
+ | MEAN VALUE | 1230 |  |  |  | 
+ | MAX VALUE | 1260 |  |  |  | 
+ |  |  |  |  |  | 
+LSP | 1060 mN
+USL | 1350 mN
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ | LISTAL Ltd. ELASTIC REACTION TEST |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ | Lower Limit |  |  | 1060 mN |  |  | Time |  |  | 4,0 s |  |  |  |  |  | BACK | 
+ | Upper Limit |  |  | 1350 mN |  |  | Trigger Force |  |  | 200 mN |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ | ESC |  | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 | ' | ├¼ |  | COMFIRM | 
+ | Q | W | E | R | T | Y | U | I | O | P | ├¿ | + | Enter |  |  |  | 
+ | A | S | D | F | G | H | J | K | L | ├▓ | ├á | ├╣ |  |  |  |  | 
+ | Z | X | C | V | B | N | M | , | . | - | Shift |  |  |  |  |  | 
+ | CTRL |  | space |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  | 
+ | LISTAL Ltd. ELASTIC REACTION TEST |  |  |  |  |  |  |  |  |  | 
+ |  |  |  |  |  |  |  |  |  |  | 
+ | ID | DATE | MOULD | MIN | MEAN | MAX | GRAPH |  |  |  | 
+ | 9 | 5/7/26 | PF0924/2 | 1160 | 1240 | 1286 | VIEW | Ôåæ |  | BACK | 
+ | 8 | 5/7/26 | PF0924/2 | 1136 | 1237 | 1272 | VIEW |  |  |  | 
+ | 7 | 5/7/26 | PF0924/1 | 1148 | 1242 | 1276 | VIEW |  |  |  | 
+ | 6 | 5/7/26 | PF0924/2 | 1178 | 1231 | 1259 | VIEW |  |  |  | 
+ | 5 | 5/7/26 | PF0924/3 | 1135 | 1231 | 1276 | VIEW |  |  |  | 
+ | 4 | 5/7/26 | PF0924/2 | 1132 | 1234 | 1272 | VIEW |  |  |  | 
+ | 3 | 5/7/26 | PF0924/2 | 1148 | 1237 | 1264 | VIEW |  |  |  | 
+ | 2 | 5/7/26 | PF0924/2 | 1178 | 1242 | 1287 | VIEW |  |  |  | 
+ | 1 | 5/7/26 | PF0924/2 | 1131 | 1246 | 1262 | VIEW | Ôåô |  |  | 
+ |  |  |  |  |  |  |  |  |  |  | 
+
+========== PAGINA 4 ==========
+industrie borla S.p.A.
+LISTAL Ltd.
+ELASTIC REACTION TEST REPORT
+PF0924
+DATE 13.lug.2026
+OPERATOR Alex Pini
+MOULD PF0924/2
+RAW MATERIAL LOT 1234/26
+PRODUCTION LOT 5678/26 PF0924/2 -Lot no. 5678/26
+1700
+QTY 64 1650
+1600
+1550
+LOWER SPEC LIMIT 1060 mN 1500
+1450
+1400
+UPPER SPEC LIMIT 1350 mN ]N
+m 1350
+[
+N 1300
+MIN DETECTED O
+1120 mN IT 1250
+C
+VALUE A
+E 1200
+R
+C 1150
+MEAN VALUE 1161 mN
+IT
+S 1100
+A
+L
+E 1050
+MAX DETECTED 1000
+1215 mN
+VALUE 950
+900
+RANGE 95 mN 850
+800
+750
+STANDARD
+24,8 mN 700
+DEVIATION
+INSPECTION RESULT
+PASS FAIL
+SIGN
+[TABELLE:]
+LISTAL Ltd.
+ELASTIC REACTION TEST REPORT
+PF0924
+DATE 13.lug.2026
+OPERATOR Alex Pini
+MOULD PF0924/2
+RAW MATERIAL LOT 1234/26
+PRODUCTION LOT 5678/26 PF0924/2 -Lot no. 5678/26
+1700
+QTY 64 1650
+1600
+1550
+LOWER SPEC LIMIT 1060 mN 1500
+1450
+1400
+UPPER SPEC LIMIT 1350 mN ]N
+m 1350
+[
+N 1300
+MIN DETECTED O
+1120 mN IT 1250
+C
+VALUE A
+E 1200
+R
+C 1150
+IT
+MEAN VALUE 1161 mN S 1100
+A
+L
+E 1050
+MAX DETECTED 1000
+1215 mN
+VALUE 950
+900
+RANGE 95 mN 850
+800
+750
+STANDARD
+24,8 mN 700
+DEVIATION
+INSPECTION RESULT
+PASS FAIL
+SIGN
+DATE | 13.lug.2026 | 
+OPERATOR | Alex Pini | 
+MOULD | PF0924/2 | 
+RAW MATERIAL LOT | 1234/26 | 
+PRODUCTION LOT | 5678/26 | 
+QTY | 64 | 
+LOWER SPEC LIMIT | 1060 | mN
+UPPER SPEC LIMIT | 1350 | mN
+MIN DETECTED
+VALUE | 1120 | mN
+MEAN VALUE | 1161 | mN
+MAX DETECTED
+VALUE | 1215 | mN
+RANGE | 95 | mN
+STANDARD
+DEVIATION | 24,8 | mN
+INSPECTION RESULT | 
+PASS | FAIL

@@ -1,0 +1,17 @@
+{
+    "sampling_rate": 1,
+    "test_time": 4.0,
+    "trigger_force": 1050.0,
+    "lower_limit": 1060.0,
+    "upper_limit": 1350.0,
+    "filter_window": 5,
+    "database": "database/database.db",
+    "reports": "reports/",
+    "logs": "logs/",
+    "password": "1234",
+    "company_name": "Industrie Borla S.p.A.",
+    "part_number": "PF0924",
+    "log_level_console": "INFO",
+    "log_level_file": "DEBUG",
+    "language": "en"
+}
