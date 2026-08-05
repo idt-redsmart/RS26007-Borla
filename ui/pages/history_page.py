@@ -68,10 +68,10 @@ class HistoryPage(QWidget):
         hdr = self._table.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
         hdr.setSectionResizeMode(0, QHeaderView.ResizeToContents)   # ID
-        hdr.setSectionResizeMode(6, QHeaderView.ResizeToContents)   # VIEW
+        hdr.setSectionResizeMode(6, QHeaderView.ResizeToContents)   # VIEW e DELETE
 
         self._table.verticalHeader().setVisible(False)
-        self._table.verticalHeader().setDefaultSectionSize(50)
+        self._table.verticalHeader().setDefaultSectionSize(70)
         self._table.setShowGrid(False)
 
         # ── Assembly ─────────────────────────────────────────────────────────
@@ -106,38 +106,46 @@ class HistoryPage(QWidget):
             self._table.setItem(row, 5, make_item(f"{rec.get('max', 0):.0f}"))
 
             # Pulsante VIEW
-            view_btn = QPushButton("📄")
+            view_btn = QPushButton("📄 " + _("VIEW"))
             view_btn.setCursor(Qt.PointingHandCursor)
+            view_btn.setMinimumSize(95, 36)
             view_btn.setStyleSheet(
                 "QPushButton { color: #00c8ff; border: 1px solid #00c8ff; "
-                "border-radius: 6px; padding: 4px; font-size: 16px; font-weight: 700; background: transparent; }"
+                "border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 700; background: transparent; }"
                 "QPushButton:hover { background: #00c8ff; color: #0b0f1a; }"
             )
             
             # Pulsante DELETE
-            del_btn = QPushButton("🗑")
+            del_btn = QPushButton("🗑 " + _("DEL"))
             del_btn.setCursor(Qt.PointingHandCursor)
+            del_btn.setMinimumSize(95, 36)
             del_btn.setStyleSheet(
                 "QPushButton { color: #ff3d57; border: 1px solid #ff3d57; "
-                "border-radius: 6px; padding: 4px; font-size: 16px; font-weight: 700; background: transparent; }"
+                "border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 700; background: transparent; }"
                 "QPushButton:hover { background: #ff3d57; color: #0b0f1a; }"
             )
             
             # Container per dare margini ai pulsanti all'interno della cella
             container = QWidget()
             container.setStyleSheet("background: transparent;")
+            container.setMinimumWidth(250)
             lay = QHBoxLayout(container)
-            lay.setContentsMargins(12, 6, 12, 6)
-            lay.setSpacing(8)
+            lay.setContentsMargins(8, 4, 8, 4)
+            lay.setSpacing(12)
             lay.addWidget(view_btn)
             lay.addWidget(del_btn)
+            lay.addStretch()  # Spinge i bottoni a sinistra
 
             rec_id = rec.get("id", -1)
             view_btn.clicked.connect(lambda _, rid=rec_id: self.view_report_requested.emit(rid))
             del_btn.clicked.connect(lambda _, rid=rec_id: self.delete_report_requested.emit(rid))
             self._table.setCellWidget(row, 6, container)
+            
+            # Forza l'altezza della riga in modo che contenga sicuramente i bottoni
+            self._table.setRowHeight(row, 65)
 
-        self._table.resizeRowsToContents()
+        # Rimosso resizeRowsToContents per evitare che schiacci le righe ignorando i CellWidget
+        pass
 
     def clear(self):
         self._table.setRowCount(0)

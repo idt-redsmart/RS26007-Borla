@@ -8,10 +8,11 @@
     "database": "database/database.db",
     "reports": "reports/",
     "logs": "logs/",
-    "password": "1234",
     "company_name": "Industrie Borla S.p.A.",
     "part_number": "PF0924",
+    "logo": "images/logo.png",
     "log_level_console": "INFO",
     "log_level_file": "DEBUG",
-    "language": "en"
+    "language": "en",
+    "password": "1234"
 }

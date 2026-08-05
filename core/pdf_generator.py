@@ -125,7 +125,31 @@ def generate_report(data: dict, reports_dir: str) -> str:
     c.setFont("Helvetica", 10)
     c.drawCentredString(WIDTH / 2, HEIGHT - MARGIN - 12, "Industrie Borla srl")
     
+    # ─── LOGO CLIENTE (alto a sinistra) ──────────────────────────────────────
+    from config import Config as _Cfg
+    from reportlab.lib.utils import ImageReader as _ImgReader
+    _logo_path = _Cfg.logo_path
+    if _logo_path is not None:
+        try:
+            _logo_pix = _ImgReader(str(_logo_path))
+            _lw, _lh  = _logo_pix.getSize()
+            # Scala mantenendo aspect ratio, molto più piccolo per non coprire i testi
+            _max_h = 12 * mm
+            _max_w = 40 * mm
+            _scale = min(_max_h / _lh, _max_w / _lw)
+            _draw_w, _draw_h = _lw * _scale, _lh * _scale
+            _logo_x = MARGIN + 2 * mm
+            # La linea orizzontale è a HEIGHT - MARGIN - 18. Posizioniamo il logo appena sotto di essa.
+            _logo_y = HEIGHT - MARGIN - 18 - _draw_h - 2 * mm
+            c.drawImage(_logo_pix, _logo_x, _logo_y,
+                        width=_draw_w, height=_draw_h, mask="auto")
+        except Exception:
+            pass  # fallback silenzioso: solo testo
+    # ─────────────────────────────────────────────────────────────────────────
+
+    
     c.line(MARGIN, HEIGHT - MARGIN - 18, WIDTH - MARGIN, HEIGHT - MARGIN - 18)
+
 
     c.setFont("Helvetica-Bold", 16)
     c.drawCentredString(WIDTH / 2, HEIGHT - MARGIN - 50, "ELASTIC REACTION TEST REPORT")
@@ -195,11 +219,12 @@ def generate_report(data: dict, reports_dir: str) -> str:
     chart_title = f"{data.get('mould', '')} - Lot no. {data.get('production_lot', '')}"
     buf = _generate_chart(force_values, lsl, usl, chart_title)
     
-    # Il grafico ora occupa l'intera larghezza, posizionato sotto la tabella e sopra i risultati
-    chart_x = MARGIN
-    chart_y = MARGIN + 48*mm  # Poco sopra al box Inspection Result (che finisce a MARGIN + 45*mm)
-    chart_w = WIDTH - 2*MARGIN
-    chart_h = table_y - chart_y - 5*mm # Riempie lo spazio tra tabella e result box
+    # Aggiungiamo un padding interno (es. 10 mm) rispetto al bordo esterno della pagina
+    chart_pad = 10 * mm
+    chart_x = MARGIN + chart_pad
+    chart_y = MARGIN + 48*mm
+    chart_w = WIDTH - 2*MARGIN - 2*chart_pad
+    chart_h = table_y - chart_y - 5*mm
     
     # Disegna un bordino leggero attorno al grafico come in foto
     c.setStrokeColorRGB(0.8, 0.8, 0.8)

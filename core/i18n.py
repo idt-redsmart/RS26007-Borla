@@ -71,6 +71,7 @@ _EN_DICT = {
     "STORICO COLLAUDI": "INSPECTION HISTORY",
     "Collaudi precedenti — clicca VIEW per aprire il report PDF": "Previous inspections — click VIEW to open PDF report",
     "VIEW": "VIEW",
+    "DEL": "DELETE",
     "DATA": "DATE",
     "REPORT": "REPORT",
     
@@ -86,6 +87,12 @@ _EN_DICT = {
     "MAX DETECTED VALUE": "MAX DETECTED VALUE",
     "STANDARD DEVIATION": "STANDARD DEVIATION",
     "INSPECTION RESULT": "INSPECTION RESULT",
+    "RIGENERA PDF": "REGENERATE PDF",
+    "Successo": "Success",
+    "Report PDF rigenerato con successo.": "PDF report successfully regenerated.",
+    "Impossibile generare il PDF": "Unable to generate PDF",
+    "Conferma eliminazione": "Confirm deletion",
+    "Sei sicuro di voler eliminare il report selezionato? L'operazione è irreversibile.": "Are you sure you want to delete the selected report? This operation is irreversible.",
     
     # ── Settings Page ──
     "IMPOSTAZIONI DI SISTEMA": "SYSTEM SETTINGS",

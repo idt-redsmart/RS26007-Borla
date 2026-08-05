@@ -30,6 +30,14 @@ QMainWindow {
     background-color: #0b0f1a;
 }
 
+/* ─── TOPBAR LOGO ──────────────────────────────────────────── */
+
+QWidget#logoTopbar {
+    background-color: #0b0f1a;
+    border-bottom: 1px solid #1e2a3a;
+}
+
+
 QStackedWidget {
     background-color: #0b0f1a;
 }
@@ -231,10 +239,10 @@ QPushButton#keyBtn {
     font-size: 14px;
     font-weight: 600;
     padding: 0px;
-    min-width: 44px;
-    min-height: 44px;
-    max-width: 44px;
-    max-height: 44px;
+    min-width: 52px;
+    min-height: 64px;
+    max-width: 52px;
+    max-height: 64px;
 }
 
 QPushButton#keyBtn:hover {
@@ -256,7 +264,7 @@ QPushButton#keySpecialBtn {
     font-size: 12px;
     font-weight: 600;
     padding: 0px;
-    min-height: 44px;
+    min-height: 64px;
 }
 
 QPushButton#keySpecialBtn:hover {
@@ -268,6 +276,33 @@ QPushButton#keySpecialBtn:hover {
 QPushButton#keySpecialBtn:pressed {
     background-color: #2d3748;
     color: #e2e8f0;
+}
+
+/* ─── TASTI SIMBOLI ──────────────────────────────────────────── */
+
+QPushButton#keySymBtn {
+    background-color: #1a2030;
+    color: #fbbf24;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 0px;
+    min-width: 52px;
+    min-height: 64px;
+    max-width: 52px;
+    max-height: 64px;
+}
+
+QPushButton#keySymBtn:hover {
+    background-color: #1f2d42;
+    border-color: #fbbf24;
+    color: #fde68a;
+}
+
+QPushButton#keySymBtn:pressed {
+    background-color: #fbbf24;
+    color: #0b0f1a;
 }
 
 QPushButton#keyStartBtn {
@@ -457,4 +492,109 @@ QInputDialog QLineEdit {
     border: 1px solid #2d3748;
     border-radius: 6px;
     padding: 8px;
+}
+
+/* ─── PASSWORD DIALOG ────────────────────────────────────────── */
+
+QLabel#pwdDialogTitle {
+    color: #e2e8f0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+QFrame#pwdSeparator {
+    color: #2d3748;
+    background-color: #2d3748;
+    max-height: 1px;
+}
+
+QLabel#pwdPrompt {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+QLineEdit#pwdField {
+    background-color: #0b0f1a;
+    color: #00c8ff;
+    border: 2px solid #2d3748;
+    border-radius: 8px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    padding: 0px 16px;
+}
+
+QLineEdit#pwdField:focus {
+    border-color: #00c8ff;
+}
+
+QPushButton#pwdOkBtn {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #0062cc, stop:1 #00c8ff);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    min-width: 140px;
+}
+
+QPushButton#pwdOkBtn:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #0073ee, stop:1 #33d4ff);
+}
+
+QPushButton#pwdOkBtn:pressed {
+    background-color: #004fa3;
+}
+
+QPushButton#pwdCancelBtn {
+    background-color: #1c2333;
+    color: #94a3b8;
+    border: 1px solid #2d3748;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 140px;
+}
+
+QPushButton#pwdCancelBtn:hover {
+    background-color: #233044;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+QPushButton#pwdCancelBtn:pressed {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+/* ─── PULSANTE OCCHIO (toggle visibilità password) ──────────── */
+
+QPushButton#pwdToggleBtn {
+    background-color: #1c2333;
+    color: #94a3b8;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    font-size: 18px;
+    padding: 0px;
+}
+
+QPushButton#pwdToggleBtn:hover {
+    background-color: #233044;
+    border-color: #00c8ff;
+    color: #e2e8f0;
+}
+
+QPushButton#pwdToggleBtn:checked {
+    background-color: #0c2a3d;
+    border-color: #00c8ff;
+    color: #00c8ff;
+}
+
+QPushButton#pwdToggleBtn:pressed {
+    background-color: #00c8ff;
+    color: #0b0f1a;
 }

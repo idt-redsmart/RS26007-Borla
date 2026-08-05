@@ -79,6 +79,10 @@ class SettingsPage(QWidget):
 
             field = QLineEdit()
             
+            # Il campo password mostra asterischi
+            if key == "password":
+                field.setEchoMode(QLineEdit.Password)
+
             # Consente sia tastiera normale che virtuale
             def focus_handler(e, f=field, orig=field.focusInEvent):
                 self._activate_field(f)
@@ -92,7 +96,18 @@ class SettingsPage(QWidget):
             row_lay = QHBoxLayout()
             row_lay.setSpacing(8)
             row_lay.addWidget(field)
-            row_lay.addWidget(unit_lbl)
+
+            if key == "password":
+                # Pulsante occhio: mostra/nasconde la password
+                self._pwd_toggle_btn = QPushButton("👁")
+                self._pwd_toggle_btn.setObjectName("pwdToggleBtn")
+                self._pwd_toggle_btn.setFixedSize(44, 44)
+                self._pwd_toggle_btn.setCheckable(True)
+                self._pwd_toggle_btn.setToolTip(_("Mostra/Nascondi password"))
+                self._pwd_toggle_btn.toggled.connect(self._toggle_password_visibility)
+                row_lay.addWidget(self._pwd_toggle_btn)
+            else:
+                row_lay.addWidget(unit_lbl)
 
             form.addWidget(lbl, row, col)
             form.addLayout(row_lay, row, col + 1)
@@ -136,16 +151,43 @@ class SettingsPage(QWidget):
         self._active_field = field
         field.setStyleSheet("border: 2px solid #00c8ff;")
 
+    def _toggle_password_visibility(self, visible: bool):
+        """Mostra o nasconde il testo nel campo password."""
+        field = self._fields.get("password")
+        if field is None:
+            return
+        if visible:
+            field.setEchoMode(QLineEdit.Normal)
+            self._pwd_toggle_btn.setText("🔓")
+        else:
+            field.setEchoMode(QLineEdit.Password)
+            self._pwd_toggle_btn.setText("👁")
+
     def _on_key(self, char: str):
         if self._active_field is None:
             return
         if char == "BACK":
             self._active_field.setText(self._active_field.text()[:-1])
-        elif char in ("ENTER", "SPACE", "CAPS"):
-            pass
-        elif char.isdigit() or char in (".", ","):
-            c = "." if char == "," else char
-            self._active_field.setText(self._active_field.text() + c)
+            return
+        if char in ("ENTER", "CAPS"):
+            return
+
+        # Verifica se il campo attivo è quello della password
+        is_password_field = (self._active_field is self._fields.get("password"))
+
+        if is_password_field:
+            # Password: accetta tutto (lettere, numeri, simboli, spazio)
+            if char == "SPACE":
+                self._active_field.setText(self._active_field.text() + " ")
+            else:
+                self._active_field.setText(self._active_field.text() + char)
+        else:
+            # Campi numerici: solo cifre e punto decimale
+            if char == "SPACE":
+                return
+            if char.isdigit() or char in (".", ","):
+                c = "." if char == "," else char
+                self._active_field.setText(self._active_field.text() + c)
 
     def _on_confirm(self):
         try:

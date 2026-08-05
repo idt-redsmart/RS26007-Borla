@@ -55,6 +55,7 @@ _DEFAULTS: dict = {
     # ── Branding ──────────────────────────────────────────────────────────────
     "company_name":   "Industrie Borla srl",
     "part_number":    "PF0924",
+    "logo":           "images/logo.png",   # percorso relativo ad APP_ROOT
 
     # ── Logging ───────────────────────────────────────────────────────────────
     "log_level_console": "INFO",
@@ -137,6 +138,13 @@ class _Config:
         p = APP_ROOT / self._data["logs"]
         p.mkdir(parents=True, exist_ok=True)
         return p
+
+    @property
+    def logo_path(self) -> Path | None:
+        """Percorso assoluto del logo cliente (None se il file non esiste)."""
+        raw = self._data.get("logo", "images/logo.png")
+        p = APP_ROOT / raw
+        return p if p.exists() else None
 
     # ─── Info piattaforma ────────────────────────────────────────────────────
 

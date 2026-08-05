@@ -25,9 +25,11 @@ class ReportPage(QWidget):
     """
 
     back_requested = pyqtSignal()
+    regenerate_requested = pyqtSignal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._current_test_id = -1
         self._build_ui()
 
     # ─── Build ──────────────────────────────────────────────────────────────
@@ -41,11 +43,18 @@ class ReportPage(QWidget):
         header = QHBoxLayout()
         title = QLabel(_("REPORT"))
         title.setObjectName("titleLabel")
+        
+        self._regen_btn = QPushButton("📄 " + _("RIGENERA PDF"))
+        self._regen_btn.setObjectName("backBtn")  # Usa lo stesso stile di backBtn
+        self._regen_btn.clicked.connect(self._on_regenerate)
+        
         back_btn = QPushButton("← " + _("INDIETRO"))
         back_btn.setObjectName("backBtn")
         back_btn.clicked.connect(self.back_requested)
+        
         header.addWidget(title)
         header.addStretch()
+        header.addWidget(self._regen_btn)
         header.addWidget(back_btn)
 
         # ── Tentativo di caricare QWebEngineView per PDF ─────────────────────
@@ -183,6 +192,10 @@ class ReportPage(QWidget):
             grid.addWidget(key_lbl, row, col * 2)
             grid.addWidget(val_lbl, row, col * 2 + 1)
 
+    def _on_regenerate(self):
+        if self._current_test_id >= 0:
+            self.regenerate_requested.emit(self._current_test_id)
+
     # ─── Public API ─────────────────────────────────────────────────────────
 
     def load_report(self, data: dict):
@@ -195,6 +208,7 @@ class ReportPage(QWidget):
                   min_v, mean, max_v, rng, std, result (PASS/FAIL),
                   samples (list[float]), pdf_path (str)
         """
+        self._current_test_id = data.get("id", -1)
         pdf_path = data.get("pdf_path", "")
         import os
         

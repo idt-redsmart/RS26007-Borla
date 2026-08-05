@@ -10,8 +10,9 @@ import os
 
 from PyQt5.QtWidgets import (
     QMainWindow, QStackedWidget, QWidget,
-    QVBoxLayout, QMessageBox, QInputDialog, QLineEdit
+    QVBoxLayout, QHBoxLayout, QMessageBox, QLineEdit
 )
+from PyQt5.QtCore import Qt
 
 from ui.pages.home_page       import HomePage
 from ui.pages.new_test_page   import NewTestPage
@@ -19,7 +20,9 @@ from ui.pages.test_page       import TestPage
 from ui.pages.settings_page   import SettingsPage
 from ui.pages.history_page    import HistoryPage
 from ui.pages.report_page     import ReportPage
-from ui.widgets.status_widget import StatusWidget
+from ui.widgets.status_widget    import StatusWidget
+from ui.widgets.password_dialog  import PasswordDialog
+from ui.widgets.logo_widget      import LogoWidget
 
 from core.i18n import _
 
@@ -95,10 +98,23 @@ class MainWindow(QMainWindow):
         # ── Status bar ────────────────────────────────────────────────────────
         self._status = StatusWidget()
 
+        # ── Topbar logo (sopra lo stack, parte del layout — non overlay) ──────
+        topbar = QWidget()
+        topbar.setObjectName("logoTopbar")
+        topbar.setFixedHeight(60)
+        topbar_lay = QHBoxLayout(topbar)
+        topbar_lay.setContentsMargins(14, 4, 14, 4)
+        topbar_lay.setSpacing(0)
+        self._logo = LogoWidget(parent=topbar, max_h=48, max_w=200,
+                                align=Qt.AlignLeft | Qt.AlignVCenter)
+        topbar_lay.addWidget(self._logo)
+        topbar_lay.addStretch()
+
+        root.addWidget(topbar)
         root.addWidget(self._stack)
         root.addWidget(self._status)
 
-    # ─── Segnali pagine → navigazione ────────────────────────────────────────
+    # ─── Segnali pagine → navigazione ──────────────────────────────────────
 
     def _connect_page_signals(self):
         # Home
@@ -124,6 +140,7 @@ class MainWindow(QMainWindow):
 
         # Report
         self.report.back_requested.connect(lambda: self.show_page(self.PAGE_HISTORY))
+        self.report.regenerate_requested.connect(self._on_regenerate_report)
 
     # ─── Segnali Controller → GUI ────────────────────────────────────────────
 
@@ -235,13 +252,13 @@ class MainWindow(QMainWindow):
     # ─── Settings ────────────────────────────────────────────────────────────
 
     def _open_settings_with_password(self):
-        password, ok = QInputDialog.getText(
-            self,
-            _("Accesso protetto"),
-            _("Inserire la password:"),
-            QLineEdit.Password,
+        dlg = PasswordDialog(
+            parent=self,
+            title=_("Accesso protetto"),
+            prompt=_("Inserire la password:"),
         )
-        if ok:
+        if dlg.exec_() == PasswordDialog.Accepted:
+            password    = dlg.password()
             db_password = self._db.get_password()
             if password == db_password:
                 self.settings.load_current_values(db_password)
@@ -286,6 +303,7 @@ class MainWindow(QMainWindow):
 
         samples_raw = record.get("samples", [])
         self.report.load_report({
+            "id":               record["id"],
             "date":             record["date"][:16].replace("T", " "),
             "operator":         record["operator"],
             "mould":            record["mould"],
@@ -316,6 +334,46 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.Yes:
             self._db.delete_test(test_id)
             self._open_history()  # Ricarica la tabella
+
+    def _on_regenerate_report(self, test_id: int):
+        record = self._db.load_test(test_id)
+        if record is None:
+            return
+            
+        from core.pdf_generator import generate_report
+        import logging
+        log = logging.getLogger(__name__)
+        
+        try:
+            data_for_pdf = {
+                "id": record["id"],
+                "date": record["date"],
+                "operator": record["operator"],
+                "mould": record["mould"],
+                "production_lot": record["production_lot"],
+                "raw_material_lot": record["raw_material_lot"],
+                "qty": record["qty"],
+                "lower_limit": record["lower_limit"],
+                "upper_limit": record["upper_limit"],
+                "min_mn": record["min_mn"],
+                "mean_mn": record["mean_mn"],
+                "max_mn": record["max_mn"],
+                "range_mn": record["range_mn"],
+                "std_mn": record["std_mn"],
+                "result": record["result"],
+                "samples": record.get("samples", []),
+                "part_number": Config.part_number
+            }
+            
+            pdf_path = generate_report(data_for_pdf, Config.reports_path)
+            self._db.update_pdf_path(test_id, pdf_path)
+            log.info(f"Report PDF rigenerato con successo in {pdf_path}")
+            
+            QMessageBox.information(self, _("Successo"), _("Report PDF rigenerato con successo."))
+            self._on_view_report(test_id)  # Ricarica il report
+        except Exception as e:
+            log.error(f"Errore rigenerazione PDF: {e}", exc_info=True)
+            QMessageBox.critical(self, _("Errore"), f"{_('Impossibile generare il PDF')}:\n{e}")
 
     # ─── Utility ──────────────────────────────────────────────────────────────
 
