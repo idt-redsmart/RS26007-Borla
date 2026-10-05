@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
     # ─── Build ──────────────────────────────────────────────────────────────
 
     def _build_ui(self):
-        self.setWindowTitle("ElasticReactionTest  —  Industrie Borla srl")
+        self.setWindowTitle(f"ElasticReactionTest  —  {Config.company_name}")
         self.setMinimumSize(1280, 800)
 
         central = QWidget()
@@ -182,9 +182,12 @@ class MainWindow(QMainWindow):
         # Sessione completata
         ctrl.session_done.connect(self._on_session_done)
 
+        # Sessione terminata senza pezzi → torna all'inserimento dati
+        ctrl.session_cancelled.connect(self._on_session_cancelled)
+
         # Errori → MessageBox
         ctrl.error_occurred.connect(
-            lambda msg: QMessageBox.warning(self, _("Errore"), msg)
+            lambda msg: self._show_message(QMessageBox.Warning, _("Errore"), msg)
         )
 
     # ─── Navigation ─────────────────────────────────────────────────────────
@@ -237,7 +240,7 @@ class MainWindow(QMainWindow):
 
         # Mostra esito con MessageBox
         icon = QMessageBox.Information if result.result == "PASS" else QMessageBox.Warning
-        QMessageBox(
+        self._show_message(
             icon,
             _("Sessione completata"),
             f"{_('Risultato')}:  {result.result}\n"
@@ -246,8 +249,28 @@ class MainWindow(QMainWindow):
             f"Mean:       {result.mean_mn:.1f} mN\n"
             f"Max:        {result.max_mn:.1f} mN\n"
             f"Std:        {result.std_mn:.1f} mN",
-            parent=self,
-        ).exec_()
+        )
+
+    def _on_session_cancelled(self):
+        """END premuto senza pezzi acquisiti: nessun salvataggio, torna ai dati."""
+        self._status.set_message(
+            _("Collaudo annullato — nessun pezzo acquisito"), "#94a3b8"
+        )
+        self.show_page(self.PAGE_NEW_TEST)
+
+    def _show_message(self, icon, title: str, text: str) -> None:
+        """
+        MessageBox non bloccante e sempre in primo piano.
+        Con exec_() in fullscreen il dialogo può finire dietro la finestra
+        principale: l'app sembra bloccata mentre il loop eventi gira.
+        """
+        box = QMessageBox(icon, title, text, QMessageBox.Ok, self)
+        box.setWindowFlags(box.windowFlags() | Qt.WindowStaysOnTopHint)
+        box.setAttribute(Qt.WA_DeleteOnClose)
+        box.setWindowModality(Qt.ApplicationModal)
+        box.open()
+        box.raise_()
+        box.activateWindow()
 
     # ─── Settings ────────────────────────────────────────────────────────────
 
@@ -289,6 +312,7 @@ class MainWindow(QMainWindow):
                 "min":   r["min_mn"],
                 "mean":  r["mean_mn"],
                 "max":   r["max_mn"],
+                "result": r["result"],
             }
             for r in records
         ]

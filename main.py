@@ -23,7 +23,6 @@ from ui.main_window import MainWindow
 from hardware.loadcell import LoadCell
 from hardware.acquisition_worker import AcquisitionWorker
 
-
 # ─── Font cross-platform ──────────────────────────────────────────────────────
 
 _FONT_CANDIDATES_WIN   = ["Segoe UI", "Arial"]
@@ -42,7 +41,7 @@ def _pick_font(candidates: list[str], fallback: str = "Sans Serif") -> str:
 def _setup_font(app: QApplication) -> None:
     candidates = _FONT_CANDIDATES_WIN if IS_WINDOWS else _FONT_CANDIDATES_LINUX
     font_name  = _pick_font(candidates)
-    app.setFont(QFont(font_name, 10))
+    app.setFont(QFont(font_name, 11))
     log.info("Font UI: %s", font_name)
 
 
@@ -90,7 +89,7 @@ def main() -> None:
 
     # ── Avvio ─────────────────────────────────────────────────────────────────
     worker.start()
-    window.show()
+    window.showFullScreen()
     log.info("Applicazione avviata")
 
     exit_code = app.exec_()

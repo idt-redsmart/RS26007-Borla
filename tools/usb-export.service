@@ -1,0 +1,24 @@
+# Servizio systemd (utente) per la copia automatica dei report su chiavetta USB.
+#
+# Installazione sul dispositivo (come utente arduino, NON root):
+#   mkdir -p ~/.config/systemd/user
+#   cp tools/usb-export.service ~/.config/systemd/user/
+#   # adattare WorkingDirectory/ExecStart se il progetto non è in ~/RS26007-Borla
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now usb-export.service
+#   sudo loginctl enable-linger arduino      # avvio anche senza login grafico
+#
+# Log:  journalctl --user -u usb-export -f   oppure  logs/usb_export.log
+
+[Unit]
+Description=Copia automatica report Borla su chiavetta USB
+
+[Service]
+Type=simple
+WorkingDirectory=%h/RS26007-Borla
+ExecStart=/usr/bin/python3 tools/usb_export.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

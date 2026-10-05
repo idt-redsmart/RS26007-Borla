@@ -122,11 +122,12 @@ def generate_report(data: dict, reports_dir: str) -> str:
     c.rect(MARGIN, MARGIN, WIDTH - 2*MARGIN, HEIGHT - 2*MARGIN)
 
     # ─── HEADER ───
+    from config import Config as _Cfg_hdr
     c.setFont("Helvetica", 10)
-    c.drawCentredString(WIDTH / 2, HEIGHT - MARGIN - 12, "Industrie Borla srl")
+    c.drawCentredString(WIDTH / 2, HEIGHT - MARGIN - 12, _Cfg_hdr.company_name)
     
     # ─── LOGO CLIENTE (alto a sinistra) ──────────────────────────────────────
-    from config import Config as _Cfg
+    _Cfg = _Cfg_hdr  # già importato sopra
     from reportlab.lib.utils import ImageReader as _ImgReader
     _logo_path = _Cfg.logo_path
     if _logo_path is not None:

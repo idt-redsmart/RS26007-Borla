@@ -53,7 +53,7 @@ _DEFAULTS: dict = {
     # (La password è ora salvata nel database)
 
     # ── Branding ──────────────────────────────────────────────────────────────
-    "company_name":   "Industrie Borla srl",
+    "company_name":   "Industrie Borla S.p.A",
     "part_number":    "PF0924",
     "logo":           "images/logo.png",   # percorso relativo ad APP_ROOT
 

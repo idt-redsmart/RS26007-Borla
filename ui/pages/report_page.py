@@ -14,6 +14,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QUrl
 
 from ui.widgets.graph_widget import GraphWidget
 from core.i18n import _
+from config import Config
 
 
 class ReportPage(QWidget):
@@ -99,7 +100,7 @@ class ReportPage(QWidget):
         hdr_lay = QHBoxLayout(hdr)
         hdr_lay.setContentsMargins(24, 16, 24, 16)
 
-        company_lbl = QLabel("Industrie Borla srl")
+        company_lbl = QLabel(Config.company_name)
         company_lbl.setObjectName("companyLabel")
         title_lbl = QLabel(_("ELASTIC REACTION TEST REPORT"))
         title_lbl.setStyleSheet(

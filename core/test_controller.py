@@ -23,6 +23,7 @@ SEGNALI EMESSI verso la GUI:
     piece_done(int, bool)             — pezzo N completato, PASS/FAIL
     stats_updated(dict)               — statistiche aggiornate
     session_done(TestResult)          — sessione terminata
+    session_cancelled()               — sessione terminata senza pezzi acquisiti
     error_occurred(str)               — messaggio di errore
 """
 
@@ -71,6 +72,7 @@ class TestController(QObject):
     piece_data_ready    = pyqtSignal(list)            # list[float] forze dell'ultimo pezzo
     stats_updated       = pyqtSignal(dict)
     session_done        = pyqtSignal(object)          # TestResult
+    session_cancelled   = pyqtSignal()                # END senza pezzi acquisiti
     error_occurred      = pyqtSignal(str)
 
     # ── Costruttore ──────────────────────────────────────────────────────────
@@ -131,8 +133,10 @@ class TestController(QObject):
         self._acq_timer.stop()
 
         if not self._result or not self._result.samples:
-            # Nessun pezzo acquisito — annulla silenziosamente
+            # Nessun pezzo acquisito — annulla senza salvare e avvisa la GUI,
+            # altrimenti la pagina di test resta aperta con il controller in IDLE
             self._reset()
+            self.session_cancelled.emit()
             return
 
         self._set_state(State.SAVING)
@@ -174,6 +178,8 @@ class TestController(QObject):
 
     def _acquire_sample(self, force_mn: float) -> None:
         """Aggiunge un campione alla lista del pezzo corrente."""
+        if self._state != State.ACQUIRING or self._result is None:
+            return  # guard: stop() chiamato mentre il timer era ancora in coda
         lsl = self._result.lower_limit
         usl = self._result.upper_limit
         sample = Sample(
@@ -190,6 +196,8 @@ class TestController(QObject):
         Calcola la percentuale di avanzamento e termina al raggiungimento
         del tempo impostato.
         """
+        if self._state != State.ACQUIRING or self._result is None:
+            return  # guard: timer scattato dopo end_session()
         self._acq_elapsed_ms += 50
         percent = min(100, int(self._acq_elapsed_ms / self._acq_duration_ms * 100))
         self.acquiring_progress.emit(percent)
@@ -205,6 +213,8 @@ class TestController(QObject):
         Aggiunge i campioni al TestResult, aggiorna le statistiche di sessione
         e segnala la UI. Poi torna in WAITING_TRIGGER per il pezzo successivo.
         """
+        if self._result is None:
+            return  # guard: sessione annullata mentre il timer era in coda
         if not self._current_piece_samples:
             self.error_occurred.emit(_("Nessun campione acquisito per questo pezzo."))
             self._set_state(State.WAITING_TRIGGER)

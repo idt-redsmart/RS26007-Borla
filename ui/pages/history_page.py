@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QLabel, QTableWidget, QTableWidgetItem, QHeaderView,
     QAbstractItemView
 )
+from PyQt5.QtGui import QColor
 from PyQt5.QtCore import pyqtSignal, Qt
 
 from core.i18n import _
@@ -27,7 +28,7 @@ class HistoryPage(QWidget):
     delete_report_requested = pyqtSignal(int)
     back_requested        = pyqtSignal()
 
-    _COLUMNS = ["ID", _("DATA"), _("STAMPO"), "MIN mN", "MEAN mN", "MAX mN", _("AZIONI")]
+    _COLUMNS = ["ID", _("DATA"), _("STAMPO"), "MIN mN", "MEAN mN", "MAX mN", _("ESITO"), _("AZIONI")]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -68,7 +69,7 @@ class HistoryPage(QWidget):
         hdr = self._table.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.Stretch)
         hdr.setSectionResizeMode(0, QHeaderView.ResizeToContents)   # ID
-        hdr.setSectionResizeMode(6, QHeaderView.ResizeToContents)   # VIEW e DELETE
+        hdr.setSectionResizeMode(7, QHeaderView.ResizeToContents)   # VIEW e DELETE
 
         self._table.verticalHeader().setVisible(False)
         self._table.verticalHeader().setDefaultSectionSize(70)
@@ -104,6 +105,14 @@ class HistoryPage(QWidget):
             self._table.setItem(row, 3, make_item(f"{rec.get('min', 0):.0f}"))
             self._table.setItem(row, 4, make_item(f"{rec.get('mean', 0):.1f}"))
             self._table.setItem(row, 5, make_item(f"{rec.get('max', 0):.0f}"))
+            
+            esito = rec.get("result", "—")
+            esito_item = make_item(esito)
+            if esito == "PASS":
+                esito_item.setForeground(QColor("#00e676"))
+            elif esito == "FAIL":
+                esito_item.setForeground(QColor("#ff3d57"))
+            self._table.setItem(row, 6, esito_item)
 
             # Pulsante VIEW
             view_btn = QPushButton("📄 " + _("VIEW"))
@@ -139,7 +148,7 @@ class HistoryPage(QWidget):
             rec_id = rec.get("id", -1)
             view_btn.clicked.connect(lambda _, rid=rec_id: self.view_report_requested.emit(rid))
             del_btn.clicked.connect(lambda _, rid=rec_id: self.delete_report_requested.emit(rid))
-            self._table.setCellWidget(row, 6, container)
+            self._table.setCellWidget(row, 7, container)
             
             # Forza l'altezza della riga in modo che contenga sicuramente i bottoni
             self._table.setRowHeight(row, 65)

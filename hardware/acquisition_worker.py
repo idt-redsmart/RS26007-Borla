@@ -6,13 +6,13 @@ Legge continuamente dalla cella di carico ed emette il segnale `force_received`.
 
 Tutto il resto dell'applicazione gira sul main thread.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  REGOLA FONDAMENTALE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Questo worker NON chiama mai direttamente nessun widget Qt.
-  Comunica esclusivamente tramite il segnale `force_received(float)`.
-  Il TestController riceve il segnale e aggiorna la GUI sul main thread.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-------------------------------------------------------------------------------
+REGOLA FONDAMENTALE
+-------------------------------------------------------------------------------
+Questo worker NON chiama mai direttamente nessun widget Qt.
+Comunica esclusivamente tramite il segnale `force_received(float)`.
+Il TestController riceve il segnale e aggiorna la GUI sul main thread.
+-------------------------------------------------------------------------------
 
 Usage (in MainWindow o main.py):
     worker = AcquisitionWorker(loadcell, sampling_rate=200)
@@ -80,21 +80,10 @@ class AcquisitionWorker(QThread):
     # ─── Ciclo principale ────────────────────────────────────────────────────
 
     def run(self) -> None:
+        
         """
         Loop di acquisizione. Gira finché stop() non viene chiamato.
 
-        ┌─────────────────────────────┐
-        │  connect()                  │
-        │  tare()                     │
-        │                             │
-        │  while running:             │
-        │      raw  = loadcell.read() │
-        │      filt = filter(raw)     │
-        │      emit force_received    │
-        │      sleep(period)          │
-        │                             │
-        │  disconnect()               │
-        └─────────────────────────────┘
         """
         logger.info("AcquisitionWorker avviato (rate=%d Hz)", self._rate)
 

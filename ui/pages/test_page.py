@@ -16,6 +16,7 @@ from ui.widgets.graph_widget import GraphWidget
 from ui.widgets.statistics_widget import StatisticsWidget
 from ui.widgets.force_widget import ForceWidget
 from core.i18n import _
+from config import Config
 
 
 class TestPage(QWidget):
@@ -113,7 +114,7 @@ class TestPage(QWidget):
         lay = QHBoxLayout(frame)
         lay.setContentsMargins(16, 10, 16, 10)
 
-        company = QLabel("Industrie Borla srl")
+        company = QLabel(Config.company_name)
         company.setObjectName("companyLabel")
 
         title = QLabel("ELASTIC REACTION TEST")

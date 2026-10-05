@@ -37,29 +37,31 @@ class NewTestPage(QWidget):
 
     def _build_ui(self):
         root = QVBoxLayout(self)
-        root.setContentsMargins(40, 30, 40, 20)
-        root.setSpacing(20)
+        root.setContentsMargins(30, 10, 30, 14)
+        root.setSpacing(10)
 
-        # ── Header ──────────────────────────────────────────────────────────
+        # ── Header: titolo compatto + sottotitolo sulla stessa riga ─────────
         header = QHBoxLayout()
+        header.setSpacing(16)
         title = QLabel(_("IMPOSTA COLLAUDO"))
         title.setObjectName("titleLabel")
+        title.setStyleSheet("font-size: 20px;")
+        subtitle = QLabel(_("Inserire i dati prima di avviare il collaudo"))
+        subtitle.setObjectName("subtitleLabel")
         back_btn = QPushButton("← " + _("INDIETRO"))
         back_btn.setObjectName("backBtn")
         back_btn.clicked.connect(self.back_requested)
         header.addWidget(title)
+        header.addWidget(subtitle)
         header.addStretch()
         header.addWidget(back_btn)
-
-        subtitle = QLabel(_("Inserire i dati prima di avviare il collaudo"))
-        subtitle.setObjectName("subtitleLabel")
 
         # ── Campi di input ───────────────────────────────────────────────────
         form_frame = QFrame()
         form_frame.setObjectName("card")
         form = QGridLayout(form_frame)
-        form.setContentsMargins(30, 24, 30, 24)
-        form.setSpacing(16)
+        form.setContentsMargins(24, 12, 24, 12)
+        form.setSpacing(8)
         form.setColumnStretch(1, 1)
 
         self._fields: dict[str, QLineEdit] = {}
@@ -78,6 +80,8 @@ class NewTestPage(QWidget):
             field = QLineEdit()
             field.setPlaceholderText(placeholder)
             field.setObjectName("inputField")
+            if key == "OPERATOR":
+                field.setMaxLength(12)   # codice operatore: max 12 caratteri
             
             # Consente sia tastiera normale che virtuale
             def focus_handler(e, f=field, orig=field.focusInEvent):
@@ -90,7 +94,13 @@ class NewTestPage(QWidget):
             form.addWidget(field, row, 1)
 
         # ── Tastiera virtuale ────────────────────────────────────────────────
-        self._keyboard = VirtualKeyboard()
+        self._keyboard = VirtualKeyboard(key_max_height=90)
+        # Tasti più grandi in questa pagina → scritte proporzionate
+        self._keyboard.setStyleSheet(
+            "QPushButton#keyBtn { font-size: 22px; }"
+            "QPushButton#keySymBtn { font-size: 24px; }"
+            "QPushButton#keySpecialBtn { font-size: 16px; }"
+        )
         self._keyboard.key_pressed.connect(self._on_key)
 
         # ── Pulsante START TEST ──────────────────────────────────────────────
@@ -101,9 +111,8 @@ class NewTestPage(QWidget):
 
         # ── Assembly ─────────────────────────────────────────────────────────
         root.addLayout(header)
-        root.addWidget(subtitle)
         root.addWidget(form_frame)
-        root.addWidget(self._keyboard)
+        root.addWidget(self._keyboard, 1)   # la tastiera prende lo spazio residuo
         root.addWidget(start_btn)
 
         # Attiva il primo campo di default

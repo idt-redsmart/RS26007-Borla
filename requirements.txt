@@ -1,0 +1,22 @@
+# RS26007-Borla — Python dependencies
+# Installazione: pip install -r requirements.txt
+
+# ── GUI ───────────────────────────────────────────────────────────────────────
+#PyQt5>=5.15
+# ── Hardware — I2C NAU7802 ─────────────────────────────────────────────
+#sparkfun-qwiic-nau7802
+
+# ── Grafici ───────────────────────────────────────────────────────────────────
+matplotlib>=3.7
+numpy>=1.24
+
+# ── Report PDF ────────────────────────────────────────────────────────────────
+reportlab>=4.0
+msgpack>=1.0
+
+# ── Hardware — Arduino_RouterBridge ───────────────────────────────────────────
+# Fornito da Arduino come pacchetto separato (non su PyPI pubblico).
+# Installare manualmente con il wheel fornito da Arduino:
+#   pip install arduino_cloudhub-*.whl
+# oppure da indirizzo interno se disponibile:
+#   pip install arduino-cloud-client

@@ -1,5 +1,5 @@
 {
-    "sampling_rate": 1,
+    "sampling_rate": 200,
     "test_time": 4.0,
     "trigger_force": 1050.0,
     "lower_limit": 1060.0,

@@ -13,6 +13,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFont
 
 from core.i18n import _
+from config import Config
 
 
 class HomePage(QWidget):
@@ -42,7 +43,7 @@ class HomePage(QWidget):
         header = QVBoxLayout()
         header.setSpacing(6)
 
-        company = QLabel("Industrie Borla srl")
+        company = QLabel(Config.company_name)
         company.setObjectName("companyLabel")
         company.setAlignment(Qt.AlignCenter)
 
