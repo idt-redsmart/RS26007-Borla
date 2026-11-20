@@ -91,6 +91,28 @@ def setup_logging(
     )
 
 
+def set_levels(level_console: str, level_file: str) -> None:
+    """
+    Applica i livelli letti da config.json agli handler già creati.
+    setup_logging() parte prima di Config (per registrarne i messaggi),
+    quindi i livelli configurati si possono applicare solo dopo.
+    """
+    for handler in logging.getLogger().handlers:
+        # RotatingFileHandler è una sottoclasse di StreamHandler: va testato prima
+        if isinstance(handler, logging.handlers.RotatingFileHandler):
+            level = level_file
+        elif isinstance(handler, logging.StreamHandler):
+            level = level_console
+        else:
+            continue
+        handler.setLevel(getattr(logging, level.upper(), logging.INFO))
+
+    logging.getLogger(__name__).info(
+        "Livelli di log da config.json — console: %s, file: %s",
+        level_console.upper(), level_file.upper(),
+    )
+
+
 def get_log_path() -> Path:
     """Restituisce il percorso assoluto del file di log corrente."""
     return _LOG_FILE

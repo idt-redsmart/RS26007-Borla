@@ -45,9 +45,12 @@ class ArduinoRPCBridge:
             list(args)
         ]
 
+        # I parametri dello sketch sono float a 32 bit: un double msgpack
+        # potrebbe essere rifiutato come tipo errato
         packet = msgpack.packb(
             request,
-            use_bin_type=True
+            use_bin_type=True,
+            use_single_float=True
         )
 
         with socket.socket(

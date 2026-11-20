@@ -7,6 +7,7 @@ Collega la UI al TestController tramite segnali — nessuna logica di business q
 """
 
 import os
+from datetime import datetime
 
 from PyQt5.QtWidgets import (
     QMainWindow, QStackedWidget, QWidget,
@@ -20,6 +21,7 @@ from ui.pages.test_page       import TestPage
 from ui.pages.settings_page   import SettingsPage
 from ui.pages.history_page    import HistoryPage
 from ui.pages.report_page     import ReportPage
+from ui.pages.calibration_page import CalibrationPage
 from ui.widgets.status_widget    import StatusWidget
 from ui.widgets.password_dialog  import PasswordDialog
 from ui.widgets.logo_widget      import LogoWidget
@@ -43,6 +45,7 @@ class MainWindow(QMainWindow):
     PAGE_SETTINGS = "settings"
     PAGE_HISTORY  = "history"
     PAGE_REPORT   = "report"
+    PAGE_CALIBRATION = "calibration"
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -82,6 +85,7 @@ class MainWindow(QMainWindow):
         self.settings = SettingsPage()
         self.history  = HistoryPage()
         self.report   = ReportPage()
+        self.calibration = CalibrationPage()
 
         self._pages: dict[str, QWidget] = {
             self.PAGE_HOME:     self.home,
@@ -90,6 +94,7 @@ class MainWindow(QMainWindow):
             self.PAGE_SETTINGS: self.settings,
             self.PAGE_HISTORY:  self.history,
             self.PAGE_REPORT:   self.report,
+            self.PAGE_CALIBRATION: self.calibration,
         }
 
         for page in self._pages.values():
@@ -132,6 +137,10 @@ class MainWindow(QMainWindow):
         # Settings
         self.settings.back_requested.connect(lambda: self.show_page(self.PAGE_HOME))
         self.settings.settings_saved.connect(self._on_settings_saved)
+        self.settings.calibration_page_requested.connect(self._open_calibration)
+
+        # Calibrazione (tara e calibrazione vanno al worker: collegate in main.py)
+        self.calibration.back_requested.connect(lambda: self.show_page(self.PAGE_SETTINGS))
 
         # History Page
         self.history.back_requested.connect(lambda: self.show_page(self.PAGE_HOME))
@@ -147,8 +156,12 @@ class MainWindow(QMainWindow):
     def _connect_controller_signals(self):
         ctrl = self._controller
 
-        # Forza corrente → widget forza sulla TestPage
+        # Forza corrente → widget forza sulla TestPage e sulla pagina di calibrazione
         ctrl.force_updated.connect(self.test.set_force)
+        ctrl.force_updated.connect(self.calibration.set_force)
+
+        # Tara di inizio sessione riuscita → attesa del primo pezzo
+        ctrl.tare_completed.connect(self.test.set_status_waiting)
 
         # Dati del pezzo (inviati in blocco a fine acquisizione)
         ctrl.piece_data_ready.connect(self.test.set_piece_data)
@@ -166,6 +179,11 @@ class MainWindow(QMainWindow):
 
         # Pezzo completato → notifica visiva
         ctrl.piece_done.connect(self._on_piece_done)
+
+        # Pausa dopo il pezzo → conto alla rovescia, poi attesa del pezzo successivo
+        ctrl.pause_countdown.connect(self.test.set_status_pause)
+        ctrl.waiting_zero.connect(self.test.set_status_zero)
+        ctrl.trigger_armed.connect(self.test.set_status_waiting)
 
         # Statistiche aggiornate → widget statistiche
         ctrl.stats_updated.connect(
@@ -208,15 +226,16 @@ class MainWindow(QMainWindow):
         )
         self.test.set_limits(Config.lower_limit, Config.upper_limit)
         self.test.set_expected_samples(int(Config.test_time * Config.sampling_rate))
+        self.test.set_status_taring()
         self.show_page(self.PAGE_TEST)
 
+        # Il controller fa prima la tara e poi passa in attesa del trigger
         self._controller.start_session(
             operator         = data.get("OPERATOR", ""),
             mould            = data.get("MOULD", ""),
             production_lot   = data.get("PRODUCTION LOT", ""),
             raw_material_lot = data.get("RAW MATERIAL", ""),
         )
-        self._status.set_message(_("ATTESA TRIGGER..."), "#94a3b8")
 
     def _on_end_test(self):
         """L'operatore ha premuto END TEST."""
@@ -229,7 +248,7 @@ class MainWindow(QMainWindow):
         self._status.set_message(
             f"{_('Pezzo')} #{piece_idx} — {label}", color
         )
-        self.test.set_status_waiting()
+        # L'attesa del trigger riparte solo a fine pausa (segnale trigger_armed)
 
     def _on_session_done(self, result):
         """
@@ -298,6 +317,21 @@ class MainWindow(QMainWindow):
         # Aggiorna anche il controller con i nuovi limiti se in idle
         QMessageBox.information(self, "Salvato", "Impostazioni salvate correttamente.")
         self.show_page(self.PAGE_HOME)
+
+    # ─── Calibrazione ────────────────────────────────────────────────────────
+
+    def _open_calibration(self):
+        self.calibration.load_current_values()
+        self.show_page(self.PAGE_CALIBRATION)
+
+    def on_calibration_finished(self, ok: bool, factor: float):
+        """Esito della calibrazione dal worker: salva il nuovo fattore in config.json."""
+        if ok:
+            Config.set("scale_factor", factor)
+            Config.set("calibration_date", datetime.now().isoformat(timespec="seconds"))
+            Config.set("calibration_mass_g", self.calibration.requested_mass_g)
+            Config.save()
+        self.calibration.on_calibration_finished(ok)
 
     # ─── History ─────────────────────────────────────────────────────────────
 
@@ -403,3 +437,6 @@ class MainWindow(QMainWindow):
 
     def set_loadcell_status(self, connected: bool):
         self._status.set_loadcell(connected)
+
+    def show_loadcell_error(self, message: str):
+        self._status.set_message(message, "#ff3d57")

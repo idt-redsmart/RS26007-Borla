@@ -5,9 +5,14 @@ Cervello dell'applicazione. Gestisce la macchina a stati del collaudo.
 
 STATI:
     IDLE             — nessun test in corso
+    TARING           — tara della cella a inizio sessione (attrezzatura vuota)
     WAITING_TRIGGER  — in attesa che la forza superi la soglia trigger
     ACQUIRING        — finestra di acquisizione da test_time secondi
     PROCESSING       — calcola statistiche del pezzo appena acquisito
+    PAUSE            — pause_time secondi dopo ogni pezzo: la cella torna a
+                       zero prima che il trigger venga riarmato
+    WAITING_ZERO     — dopo la pausa: il trigger si riarma solo quando la
+                       forza è rientrata in 0 ± zero_tolerance mN
     SAVING           — salva su DB e genera PDF (al termine della sessione)
     DONE             — sessione completata
 
@@ -18,9 +23,14 @@ THREAD:
 SEGNALI EMESSI verso la GUI:
     force_updated(float)              — forza corrente da visualizzare
     status_changed(str)               — messaggio di stato per la UI
+    tare_requested()                  — chiede la tara al worker (inizio sessione)
+    tare_completed()                  — tara riuscita, attesa del primo pezzo
     acquiring_started()               — inizia finestra da 4s
     acquiring_progress(int)           — percentuale completamento [0–100]
     piece_done(int, bool)             — pezzo N completato, PASS/FAIL
+    pause_countdown(int)              — secondi di pausa rimanenti dopo il pezzo
+    waiting_zero(float)               — pausa finita, forza non ancora a zero (tolleranza mN)
+    trigger_armed()                   — cella a zero, attesa del pezzo successivo
     stats_updated(dict)               — statistiche aggiornate
     session_done(TestResult)          — sessione terminata
     session_cancelled()               — sessione terminata senza pezzi acquisiti
@@ -29,6 +39,8 @@ SEGNALI EMESSI verso la GUI:
 
 from __future__ import annotations
 
+import math
+import time
 from datetime import datetime
 from enum import Enum, auto
 
@@ -46,9 +58,12 @@ from core.i18n import _
 
 class State(Enum):
     IDLE            = auto()
+    TARING          = auto()
     WAITING_TRIGGER = auto()
     ACQUIRING       = auto()
     PROCESSING      = auto()
+    PAUSE           = auto()
+    WAITING_ZERO    = auto()
     SAVING          = auto()
     DONE            = auto()
 
@@ -66,10 +81,15 @@ class TestController(QObject):
     # ── Segnali verso la GUI ─────────────────────────────────────────────────
     force_updated       = pyqtSignal(float)          # forza corrente [mN]
     status_changed      = pyqtSignal(str, str)        # (testo, colore hex)
+    tare_requested      = pyqtSignal()
+    tare_completed      = pyqtSignal()
     acquiring_started   = pyqtSignal()
     acquiring_progress  = pyqtSignal(int)             # 0–100 %
     piece_done          = pyqtSignal(int, bool)       # (piece_idx, pass)
     piece_data_ready    = pyqtSignal(list)            # list[float] forze dell'ultimo pezzo
+    pause_countdown     = pyqtSignal(int)             # secondi di pausa rimanenti
+    waiting_zero        = pyqtSignal(float)           # attesa forza in 0 ± tolleranza mN
+    trigger_armed       = pyqtSignal()                # cella a zero, attesa pezzo
     stats_updated       = pyqtSignal(dict)
     session_done        = pyqtSignal(object)          # TestResult
     session_cancelled   = pyqtSignal()                # END senza pezzi acquisiti
@@ -95,6 +115,18 @@ class TestController(QObject):
         self._acq_elapsed_ms: int = 0
         self._acq_duration_ms: int = int(Config.test_time * 1000)
 
+        # Pausa dopo ogni pezzo: durante la pausa il trigger è disarmato
+        self._pause_timer = QTimer(self)
+        self._pause_timer.setInterval(100)
+        self._pause_timer.timeout.connect(self._on_pause_tick)
+        self._pause_deadline: float = 0.0
+        self._pause_shown_s: int = -1
+        self._last_piece_text: str = ""
+        self._last_piece_color: str = "#94a3b8"
+
+        # Ultima forza ricevuta: serve per sapere se a fine pausa è già a zero
+        self._last_force: float | None = None
+
     # ─── API pubblica ────────────────────────────────────────────────────────
 
     def start_session(self, operator: str, mould: str,
@@ -119,7 +151,32 @@ class TestController(QObject):
         self._piece_idx = 0
         self._current_piece_samples = []
 
+        # Zero rifatto a ogni sessione: lo zero della cella deriva nel tempo
+        self._set_state(State.TARING)
+        self.status_changed.emit(
+            _("TARATURA IN CORSO — non toccare l'attrezzatura"), "#ffab00"
+        )
+        self.tare_requested.emit()
+
+    def on_tare_finished(self, ok: bool) -> None:
+        """
+        Slot collegato al segnale `tare_finished(bool)` dell'AcquisitionWorker.
+        Riguarda il controller solo se la tara è quella di inizio sessione.
+        """
+        if self._state != State.TARING:
+            return
+
+        if not ok:
+            self._reset()
+            self.error_occurred.emit(
+                _("Taratura non riuscita: collaudo annullato. Controllare la cella di carico.")
+            )
+            self.session_cancelled.emit()
+            return
+
         self._set_state(State.WAITING_TRIGGER)
+        self.status_changed.emit(_("ATTESA TRIGGER..."), "#94a3b8")
+        self.tare_completed.emit()
 
     def end_session(self) -> None:
         """
@@ -131,6 +188,7 @@ class TestController(QObject):
             return
 
         self._acq_timer.stop()
+        self._pause_timer.stop()
 
         if not self._result or not self._result.samples:
             # Nessun pezzo acquisito — annulla senza salvare e avvisa la GUI,
@@ -148,6 +206,7 @@ class TestController(QObject):
         Viene chiamato ad ogni campione letto dalla cella di carico.
         """
         # Aggiorna sempre la GUI con la forza corrente
+        self._last_force = force_mn
         self.force_updated.emit(force_mn)
 
         if self._state == State.WAITING_TRIGGER:
@@ -155,6 +214,10 @@ class TestController(QObject):
 
         elif self._state == State.ACQUIRING:
             self._acquire_sample(force_mn)
+
+        elif self._state == State.WAITING_ZERO:
+            if self._is_zero(force_mn):
+                self._arm_trigger()
 
     # ─── Macchina a stati ────────────────────────────────────────────────────
 
@@ -260,12 +323,79 @@ class TestController(QObject):
         force_values = [s.force_mn for s in self._result.samples]
         self.piece_data_ready.emit(force_values)
 
-        # ── Torna ad aspettare il prossimo pezzo ─────────────────────────
-        self._set_state(State.WAITING_TRIGGER)
+        # ── Pausa, poi attesa del prossimo pezzo ──────────────────────────
+        self._last_piece_text = (
+            f"{_('Pezzo')} #{self._piece_idx} — "
+            f"{_('OK ✓') if piece_ok else _('FUORI LIMITE ✗')}"
+        )
+        self._last_piece_color = "#00e676" if piece_ok else "#ff3d57"
+        self._start_pause()
+
+    def _start_pause(self) -> None:
+        """
+        Disarma il trigger per pause_time secondi: la cella torna a zero e il
+        pezzo appena provato non può far partire subito un'altra acquisizione.
+        """
+        self._set_state(State.PAUSE)
+        self._pause_deadline = time.monotonic() + max(0.0, float(Config.pause_time))
+        self._pause_shown_s = -1
+        self._pause_timer.start()
+        self._on_pause_tick()
+
+    def _on_pause_tick(self) -> None:
+        """Ogni 100 ms: aggiorna il conto alla rovescia e riarma a fine pausa."""
+        if self._state != State.PAUSE:
+            self._pause_timer.stop()
+            return  # guard: sessione terminata durante la pausa
+
+        remaining = self._pause_deadline - time.monotonic()
+        if remaining <= 0:
+            self._pause_timer.stop()
+            self._start_zero_wait()
+            return
+
+        seconds = math.ceil(remaining)
+        if seconds != self._pause_shown_s:
+            self._pause_shown_s = seconds
+            self.pause_countdown.emit(seconds)
+            self.status_changed.emit(
+                f"{self._last_piece_text}  |  "
+                f"{_('PAUSA')} {seconds} s",
+                self._last_piece_color,
+            )
+
+    @staticmethod
+    def _zero_tolerance() -> float:
+        return abs(float(Config.zero_tolerance))
+
+    def _is_zero(self, force_mn: float | None) -> bool:
+        """La cella è scarica: forza dentro 0 ± zero_tolerance mN."""
+        return force_mn is not None and abs(force_mn) <= self._zero_tolerance()
+
+    def _start_zero_wait(self) -> None:
+        """
+        Fine pausa: il trigger si riarma solo con la cella tornata a zero,
+        così un pezzo ancora carico non avvia un nuovo controllo.
+        """
+        self._set_state(State.WAITING_ZERO)
+
+        if self._is_zero(self._last_force):
+            self._arm_trigger()
+            return
+
+        self.waiting_zero.emit(self._zero_tolerance())
         self.status_changed.emit(
-            f"Pezzo #{self._piece_idx} completato — "
-            f"{'OK ✓' if piece_ok else 'FUORI LIMITE ✗'}  |  ATTESA TRIGGER",
-            "#00e676" if piece_ok else "#ff3d57",
+            f"{self._last_piece_text}  |  {_('ATTESA RITORNO A ZERO')}",
+            self._last_piece_color,
+        )
+
+    def _arm_trigger(self) -> None:
+        """Cella a zero: si attende il pezzo successivo."""
+        self._set_state(State.WAITING_TRIGGER)
+        self.trigger_armed.emit()
+        self.status_changed.emit(
+            f"{self._last_piece_text}  |  {_('ATTESA TRIGGER')}",
+            self._last_piece_color,
         )
 
     def _finalize_and_save(self) -> None:
@@ -341,6 +471,7 @@ class TestController(QObject):
 
     def _reset(self) -> None:
         """Riporta il controller allo stato IDLE."""
+        self._pause_timer.stop()
         self._state = State.IDLE
         self._result = None
         self._current_piece_samples = []

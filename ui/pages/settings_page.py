@@ -22,12 +22,14 @@ class SettingsPage(QWidget):
     Pagina impostazioni.
 
     Signals:
-        settings_saved(dict): i nuovi valori salvati
-        back_requested:       l'utente ha premuto BACK
+        settings_saved(dict):        i nuovi valori salvati
+        back_requested:              l'utente ha premuto BACK
+        calibration_page_requested:  l'utente vuole calibrare la cella di carico
     """
 
-    settings_saved  = pyqtSignal(dict)
-    back_requested  = pyqtSignal()
+    settings_saved              = pyqtSignal(dict)
+    back_requested              = pyqtSignal()
+    calibration_page_requested  = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -48,8 +50,12 @@ class SettingsPage(QWidget):
         back_btn = QPushButton("← " + _("INDIETRO"))
         back_btn.setObjectName("backBtn")
         back_btn.clicked.connect(self.back_requested)
+        calib_btn = QPushButton("⚖  " + _("CALIBRAZIONE CELLA"))
+        calib_btn.setObjectName("backBtn")
+        calib_btn.clicked.connect(self.calibration_page_requested)
         header.addWidget(title)
         header.addStretch()
+        header.addWidget(calib_btn)
         header.addWidget(back_btn)
 
         subtitle = QLabel(_("Modifica i parametri di collaudo  ·  Accesso protetto"))
@@ -70,7 +76,9 @@ class SettingsPage(QWidget):
             ("upper_limit",    _("LIMITE SUPERIORE"),    "mN", 0, 2),
             ("test_time",      _("TEMPO"),           "s",  1, 0),
             ("trigger_force",  _("FORZA TRIGGER"),  "mN", 1, 2),
+            ("pause_time",     _("PAUSA TRA PEZZI"), "s",  2, 0),
             ("password",       _("PASSWORD"),       "",   2, 2),
+            ("zero_tolerance", _("TOLLERANZA ZERO"), "mN", 3, 2),
         ]
 
         for key, label, unit, row, col in field_defs:
@@ -119,8 +127,8 @@ class SettingsPage(QWidget):
         self._lang_cb = QComboBox()
         self._lang_cb.addItems(["Italiano", "English"])
         self._lang_cb.setStyleSheet("padding: 8px; font-size: 16px; border: 1px solid #1e293b; background: #0f172a; color: white;")
-        form.addWidget(lbl_lang, 2, 0)
-        form.addWidget(self._lang_cb, 2, 1)
+        form.addWidget(lbl_lang, 3, 0)
+        form.addWidget(self._lang_cb, 3, 1)
 
         self.load_current_values()
 
@@ -196,10 +204,20 @@ class SettingsPage(QWidget):
                 "upper_limit":   float(self._fields["upper_limit"].text()),
                 "test_time":     float(self._fields["test_time"].text()),
                 "trigger_force": float(self._fields["trigger_force"].text()),
+                "pause_time":    float(self._fields["pause_time"].text()),
+                "zero_tolerance": float(self._fields["zero_tolerance"].text()),
                 "password":      self._fields["password"].text(),
             }
         except ValueError:
             QMessageBox.warning(self, _("Errore"), _("Valori non validi. Inserire solo numeri."))
+            return
+
+        if values["pause_time"] < 0:
+            QMessageBox.warning(self, _("Errore"), _("La pausa tra pezzi non può essere negativa."))
+            return
+
+        if values["zero_tolerance"] <= 0:
+            QMessageBox.warning(self, _("Errore"), _("La tolleranza dello zero deve essere maggiore di 0."))
             return
 
         lang_idx = self._lang_cb.currentIndex()
@@ -219,5 +237,7 @@ class SettingsPage(QWidget):
         self._fields["upper_limit"].setText(str(Config.upper_limit))
         self._fields["test_time"].setText(str(Config.test_time))
         self._fields["trigger_force"].setText(str(Config.trigger_force))
+        self._fields["pause_time"].setText(str(Config.pause_time))
+        self._fields["zero_tolerance"].setText(str(Config.zero_tolerance))
         self._fields["password"].setText(current_password)
         self._lang_cb.setCurrentIndex(1 if Config.language == "en" else 0)

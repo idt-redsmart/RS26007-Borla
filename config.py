@@ -37,12 +37,19 @@ _DEFAULTS: dict = {
     # ── Parametri di collaudo ─────────────────────────────────────────────────
     "sampling_rate":  200,
     "test_time":      4.0,
+    "pause_time":     6.0,          # s dopo ogni pezzo prima di riarmare il trigger
+    "zero_tolerance": 10.0,         # mN: dopo la pausa la forza deve rientrare in 0 ± questo
     "trigger_force":  200.0,
     "lower_limit":    1060.0,
     "upper_limit":    1350.0,
 
     # ── Hardware ──────────────────────────────────────────────────────────────
     "filter_window":  5,            # campioni per la media mobile
+
+    # ── Calibrazione cella di carico (scritta dalla pagina di calibrazione) ───
+    "scale_factor":       None,     # mN per conteggio ADC; None = non calibrata
+    "calibration_date":   None,     # data ISO dell'ultima calibrazione
+    "calibration_mass_g": 120.0,    # massa proposta: 1176,8 mN, centro di LSL–USL
 
     # ── Percorsi (relativi a APP_ROOT, separatore sempre '/') ─────────────────
     "database":       "database/database.db",

@@ -156,6 +156,37 @@ class TestPage(QWidget):
         )
         self._progress.setValue(0)
 
+    def set_status_taring(self):
+        self._piece_status.setText("● " + _("TARATURA IN CORSO"))
+        self._piece_status.setStyleSheet(
+            "color: #ffab00; font-size: 15px; font-weight: 700; "
+            "background: #1f1a0a; border: 1px solid #ffab00; "
+            "border-radius: 8px; padding: 12px;"
+        )
+        self._progress.setValue(0)
+
+    def set_status_pause(self, seconds: int):
+        """Pausa dopo un pezzo: trigger disarmato finché la cella torna a zero."""
+        self._piece_status.setText(
+            "● " + _("RITORNO A ZERO — ATTENDERE {s} s").format(s=seconds)
+        )
+        self._piece_status.setStyleSheet(
+            "color: #ffab00; font-size: 15px; font-weight: 700; "
+            "background: #1f1a0a; border: 1px solid #ffab00; "
+            "border-radius: 8px; padding: 12px;"
+        )
+
+    def set_status_zero(self, tolerance: float):
+        """Pausa finita ma cella ancora carica: si attende il ritorno a zero."""
+        self._piece_status.setText(
+            "● " + _("ATTESA ZERO (± {t} mN) — SCARICARE LA CELLA").format(t=f"{tolerance:g}")
+        )
+        self._piece_status.setStyleSheet(
+            "color: #ffab00; font-size: 15px; font-weight: 700; "
+            "background: #1f1a0a; border: 1px solid #ffab00; "
+            "border-radius: 8px; padding: 12px;"
+        )
+
     def set_status_acquiring(self):
         self._piece_status.setText("● " + _("ACQUISIZIONE IN CORSO"))
         self._piece_status.setStyleSheet(

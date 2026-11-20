@@ -5,7 +5,7 @@ from pathlib import Path
 # ── 1. Setup logging (prima di tutto il resto) ────────────────────────────────
 #    Importiamo core.logger PRIMA di Config così i messaggi di Config._load()
 #    vengono già catturati dal file handler.
-from core.logger import setup_logging
+from core.logger import setup_logging, set_levels
 setup_logging()
 
 log = logging.getLogger(__name__)
@@ -22,6 +22,9 @@ from config import Config, IS_WINDOWS, IS_LINUX
 from ui.main_window import MainWindow
 from hardware.loadcell import LoadCell
 from hardware.acquisition_worker import AcquisitionWorker
+
+# ── 2. Livelli di log da config.json (ora che Config è caricato) ──────────────
+set_levels(Config.log_level_console, Config.log_level_file)
 
 # ─── Font cross-platform ──────────────────────────────────────────────────────
 
@@ -83,9 +86,21 @@ def main() -> None:
              Config.sampling_rate, Config.filter_window)
 
     # ── Collega segnali ───────────────────────────────────────────────────────
-    worker.force_received.connect(window.controller.on_force_received)
+    ctrl = window.controller
+    worker.force_received.connect(ctrl.on_force_received)
     worker.connected.connect(window.set_loadcell_status)
-    worker.error_occurred.connect(lambda msg: window.set_loadcell_status(False))
+    worker.error_occurred.connect(window.show_loadcell_error)
+
+    # Tara: a ogni START (controller) e dalla pagina di calibrazione.
+    # Ognuno dei due considera solo l'esito della tara che ha chiesto lui.
+    ctrl.tare_requested.connect(worker.request_tare)
+    window.calibration.tare_requested.connect(worker.request_tare)
+    worker.tare_finished.connect(ctrl.on_tare_finished)
+    worker.tare_finished.connect(window.calibration.on_tare_finished)
+
+    # Calibrazione con peso noto
+    window.calibration.calibration_requested.connect(worker.request_calibration)
+    worker.calibration_finished.connect(window.on_calibration_finished)
 
     # ── Avvio ─────────────────────────────────────────────────────────────────
     worker.start()
